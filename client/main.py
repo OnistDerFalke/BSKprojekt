@@ -4,6 +4,7 @@ from tkinter import ttk
 from PIL import Image, ImageTk
 
 import chat
+import cipher
 import submit
 import upload
 
@@ -58,7 +59,9 @@ users_icon = Image.open('images/users_icon.png')
 users_icon = ImageTk.PhotoImage(users_icon)
 
 # cipher-mode info
-cipher_mode_info = tk.Label(root, text="Mode: Default", font=("Raleway", 10), bg="#212121", fg="white")
+cipher.mode_text = tk.StringVar()
+cipher.mode_text.set("Mode: " + cipher.mode.value)
+cipher_mode_info = tk.Label(root, textvariable=cipher.mode_text, font=("Raleway", 10), bg="#212121", fg="white")
 cipher_mode_info.place(x=480, y=570)
 
 # upload-file info
@@ -92,7 +95,7 @@ send_button.place(x=550, y=532, height=30, width=35)
 # cipher-mode button
 cipher_button = tk.Button(root,
                           image=cipher_icon,
-                          command=lambda: submit.send_message(text_message_box.get("1.0", "end-1c")),
+                          command=lambda: cipher.change_cipher_mode(),
                           font="Raleway", bg="#212121",
                           fg="white",
                           borderwidth=0,
