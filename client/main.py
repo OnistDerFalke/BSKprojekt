@@ -28,19 +28,7 @@ pb_style.configure("red.Horizontal.TProgressbar", foreground='#212121', backgrou
 progress_bar = ttk.Progressbar(root, orient='horizontal', mode='indeterminate', length=450,
                                style='red.Horizontal.TProgressbar')
 progress_bar.place(x=25, y=576, height=10)
-
-# users list (just a mock for now)
-testbuttontext = tk.StringVar()
-testbutton = tk.Button(root,
-                       command=lambda: submit.send_message(text_message_box.get("1.0", "end-1c")),
-                       textvariable=testbuttontext,
-                       font="Raleway", bg="#212121",
-                       fg="white",
-                       borderwidth=0,
-                       highlightthickness=0,
-                       activebackground='#212121')
-testbutton.place(x=500, y=180, height=20, width=80)
-testbuttontext.set("mock_user")
+progress_bar.place_forget()
 
 # send icon
 send_icon = Image.open('images/send_icon.png')
@@ -77,9 +65,9 @@ text_message_box.configure(font=("Raleway", 10), fg='white', insertbackground='w
 
 # users tab
 users_icon_label = tk.Label(image=users_icon, borderwidth=0, highlightthickness=0)
-users_icon_label.place(x=500, y=150, height=25, width=30)
+users_icon_label.place(x=510, y=150, height=25, width=30)
 users_header = tk.Label(root, text="Users", font=("Raleway", 12, "bold"), bg="#212121", fg="white")
-users_header.place(x=530, y=150)
+users_header.place(x=540, y=150)
 
 # send button
 send_button = tk.Button(root,
@@ -114,5 +102,6 @@ upload_button = tk.Button(root,
                           activebackground='#212121')
 upload_button.place(x=515, y=532, height=30, width=30)
 
-chat.get_all_users()
+chat.generate_user_list(root)
+chat.generate_chat(root)
 root.mainloop()
