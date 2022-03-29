@@ -5,8 +5,11 @@ from datetime import datetime
 
 
 class User:
-    def __init__(self, name):
+    def __init__(self, name, id, host=None, port=None):
         self.name = name
+        self.id = id
+        self.host = host
+        self.port = port
 
 
 class Message:
@@ -17,10 +20,16 @@ class Message:
         self.author = author
 
 
+def show_user_chat(user):
+    return
+
+
 def get_all_users():
     try:
         response = requests.get("http://localhost:8080/api/users")
         users = response.json()
+
+        # returns users list with names, id's and used ports
         return users
     except:
         print("Could not connect to local server.")
@@ -30,7 +39,7 @@ def generate_user_list(root):
     # users = get_all_users()
 
     # Mock Users
-    users = [User("Alex"), User("Johny"), User("Anna"), User("Angela"), User("Geralt")]
+    users = [User("Alex", 0), User("Johny", 1), User("Anna", 2), User("Angela", 3), User("Geralt", 4)]
 
     height = 180
     offset_height = 25

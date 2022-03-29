@@ -75,8 +75,8 @@ users_header.place(x=540, y=150)
 # send button
 send_button = tk.Button(root,
                         image=send_icon,
-                        command=lambda: submit.send_message(text_message_box.get("1.0", "end-1c"), "User2", 2,
-                                                            chat.User("User1", 1, "localhost", 8080)),
+                        command=lambda: submit.send_message(text_message_box.get("1.0", "end-1c"), "User1", 1,
+                                                            chat.User("User2", 2, "localhost", 8081)),
                         font="Raleway", bg="#212121",
                         fg="white",
                         borderwidth=0,
@@ -108,7 +108,7 @@ upload_button.place(x=515, y=532, height=30, width=30)
 
 chat.generate_user_list(root)
 chat.generate_chat(root)
-datamanager.create_user_data_storage("User1", 1)
-listening_thread = Thread(target=communication.receive_text_message, args=("localhost", 8081,))
+datamanager.create_user_data_storage("User2", 2)
+listening_thread = Thread(target=communication.receive_text_message, args=("localhost", 8080,))
 listening_thread.start()
 root.mainloop()
