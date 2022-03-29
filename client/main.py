@@ -72,11 +72,18 @@ users_icon_label.place(x=510, y=150, height=25, width=30)
 users_header = tk.Label(root, text="Users", font=("Raleway", 12, "bold"), bg="#212121", fg="white")
 users_header.place(x=540, y=150)
 
+
 # send button
+def submit_and_clear():
+    message = text_message_box.get("1.0", "end-1c")
+    submit.send_message(message, "User2", 2,
+                        chat.User("User1", 1, "localhost", 8080))
+    text_message_box.delete("1.0", "end")
+
+
 send_button = tk.Button(root,
                         image=send_icon,
-                        command=lambda: submit.send_message(text_message_box.get("1.0", "end-1c"), "User2", 2,
-                                                            chat.User("User1", 1, "localhost", 8080)),
+                        command=lambda: submit_and_clear(),
                         font="Raleway", bg="#212121",
                         fg="white",
                         borderwidth=0,

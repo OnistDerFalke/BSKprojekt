@@ -5,18 +5,12 @@ from os.path import exists
 def create_user_data_storage(name, id):
     filedir = "data/"
     filename = str(id)+"_"+name+".json"
-    with open(filedir+filename, 'w') as file:
-        message_buffer = {
-            "message_list": []
-        }
-        json.dump(message_buffer, file)
-    with open(filedir+filename, 'r') as file:
-        file_data = json.load(file)
-    with open(filedir + filename, 'w') as file:
-        file_data["message_list"].append(message_buffer)
-        file.seek(0)
-        json.dump(file_data, file, indent=4)
-        print("Created storage for conversation with user: " + name+"#"+str(id))
+    if not exists(filedir+filename):
+        with open(filedir+filename, 'w') as file:
+            message_buffer = {
+                "message_list": []
+            }
+            json.dump(message_buffer, file)
     return
 
 
