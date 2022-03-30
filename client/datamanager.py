@@ -14,7 +14,7 @@ def create_user_data_storage(name, id):
     return
 
 
-def add_text_message(name, realname, id, target_id, message, send_time, is_external):
+def add_text_message(name, realname, id, target_id, message, send_time, is_external, is_sent = True):
     filedir = "data/"
     filename = str(target_id) + "_" + realname + ".json"
     message_data = {
@@ -24,7 +24,8 @@ def add_text_message(name, realname, id, target_id, message, send_time, is_exter
         "send_time": send_time,
         "is_external": is_external,
         "id": id,
-        "target_id": target_id
+        "target_id": target_id,
+        "is_sent": is_sent
     }
     with open(filedir+filename, 'r+') as file:
         file_data = json.load(file)

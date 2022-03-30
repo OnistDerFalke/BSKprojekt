@@ -20,6 +20,16 @@ def send_text_message(host, port, message):
     return
 
 
+def verify_connection(host, port):
+    with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
+        try:
+            s.connect((host, port))
+        except ConnectionRefusedError:
+            print(f"Connection refused to {host}:{port}")
+            return False
+    return True
+
+
 def receive_text_message(host, port):
     with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
         s.bind((host, port))
