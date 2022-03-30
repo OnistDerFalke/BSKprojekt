@@ -5,6 +5,7 @@ from threading import Thread
 from PIL import Image, ImageTk
 
 import chat
+import chat_refresher
 import cipher
 import communication
 import datamanager
@@ -76,7 +77,7 @@ users_header.place(x=540, y=150)
 # send button
 def submit_and_clear():
     message = text_message_box.get("1.0", "end-1c")
-    submit.send_message(message, "User2", 2,
+    submit.send_message("User2", message, 2,
                         chat.User("User1", 1, "localhost", 8080))
     text_message_box.delete("1.0", "end")
 
@@ -113,9 +114,11 @@ upload_button = tk.Button(root,
                           activebackground='#212121')
 upload_button.place(x=515, y=532, height=30, width=30)
 
+# setting up
+chat_refresher.root_injector(root)
+datamanager.create_user_data_storage("User1", 1)
 chat.generate_user_list(root)
 chat.generate_chat(root)
-datamanager.create_user_data_storage("User1", 1)
 listening_thread = Thread(target=communication.receive_text_message, args=("localhost", 8081,))
 listening_thread.start()
 root.mainloop()

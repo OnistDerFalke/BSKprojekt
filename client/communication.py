@@ -2,6 +2,9 @@ import socket
 import pickle
 from threading import Thread
 
+import chat_refresher
+import datamanager
+
 HEADERSIZE = 10
 
 
@@ -35,7 +38,8 @@ def receive_from_socket(conn, adr):
         try:
             msg = conn.recv(1024)
             data = pickle.loads(msg)
-            print(f"\n{data}")
+            datamanager.add_text_message(data["author"], data["author"], data["target_id"], data["id"], data["message"], data["send_time"], True)
+            chat_refresher.refresh_chat()
         except ConnectionError:
             print(f"Connection lost with {adr}")
         except EOFError:

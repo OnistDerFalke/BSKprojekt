@@ -1,8 +1,10 @@
 import requests
 import tkinter as tk
 import math
+import json
 from datetime import datetime
 
+chat_elements_list = []
 
 class User:
     def __init__(self, name, id, host=None, port=None):
@@ -13,11 +15,12 @@ class User:
 
 
 class Message:
-    def __init__(self, is_external, receive_time, content, author):
+    def __init__(self, is_external, receive_time, content, author, type="text_message"):
         self.is_external = is_external
         self.receive_time = receive_time
         self.content = content
         self.author = author
+        self.type = type
 
 
 def show_user_chat(user):
@@ -71,31 +74,38 @@ def find_author(messages):
 
 
 def generate_chat(root):
-    # Mock Messages
-    # Just to see how it works right now
-    messages = [Message(True, datetime.now().strftime("%H:%M"), "Hi, how are you?"
-                                                                " This is very long sentence to test what"
-                                                                " happens if the message is to long and if it works fine."
-                                                                " Is it? If not, you will have to fix it."
-                                                                "\n\nHere there were two enters it also works!",
-                        "Anna"),
-                Message(True, datetime.now().strftime("%H:%M"), "Very nice to meet you!", "Anna"),
-                Message(False, datetime.now().strftime("%H:%M"), "Hello Anna, I like apples.", "Me"),
-                Message(True, datetime.now().strftime("%H:%M"), "Wow, you too? Let's go to eat some together!", "Anna"),
-                Message(False, datetime.now().strftime("%H:%M"), "Of course!", "Me")]
+    global chat_elements_list
+    messages = []
+    with open('data/1_User1.json') as json_file:
+        data = json.load(json_file)
+        for msg in data["message_list"]:
+            messages.append(Message(msg["is_external"], msg["send_time"], msg["message"], msg["author"], msg["type"]))
 
     height = 190
     offset_height = 35
-    user_limit = 10
-    user_counter = 0
+    max_height = 450
 
+    msg_counter = 1
+    for message in reversed(messages):
+        lines_needed = math.floor(len(message.content) / 60)
+        lines_needed += message.content.count('\n')
+        additional_height = lines_needed * 10
+        height += offset_height + additional_height
+        if height > max_height:
+
+            break
+        else:
+            msg_counter += 1
+    print(len(messages))
     chat_title = tk.Label(root, text=find_author(messages), font=("Raleway", 16, "bold"), bg="#212121", fg="white")
     chat_title.place(x=125, y=145, height=30, width=300)
+    chat_elements_list.append(chat_title)
 
-    for message in messages:
-        if user_counter >= user_limit:
+    height = 190
+    for message in reversed(messages):
+        if msg_counter <= 0:
             break
-
+        print(height)
         # extension for longer messages
         lines_needed = math.floor(len(message.content) / 60)
         lines_needed += message.content.count('\n')
@@ -121,6 +131,14 @@ def generate_chat(root):
         chat_cloud.place(x=x_location, y=height, height=25 + additional_height, width=300)
         cloud_label.place(x=x_label_location, y=height, height=25 + additional_height, width=5)
         time_label.place(x=x_time_label_location, y=height + 16 + additional_height, height=10, width=20)
+        chat_elements_list.append(cloud_label)
+        chat_elements_list.append(chat_cloud)
+        chat_elements_list.append(time_label)
         height += offset_height + additional_height
-        user_counter += 1
+        msg_counter -= 1
     return
+
+
+def dispose_chat():
+    for element in chat_elements_list:
+        element.destroy()

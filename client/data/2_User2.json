@@ -1,0 +1,58 @@
+{
+    "message_list": [
+        {
+            "type": "text_message",
+            "message": "Hey",
+            "author": "User2",
+            "send_time": "11:10",
+            "is_external": true,
+            "id": 1,
+            "target_id": 2
+        },
+        {
+            "type": "text_message",
+            "message": "Hello there",
+            "author": "Me",
+            "send_time": "11:10",
+            "is_external": false,
+            "id": 1,
+            "target_id": 2
+        },
+        {
+            "type": "text_message",
+            "message": "How arw yo?",
+            "author": "User2",
+            "send_time": "11:11",
+            "is_external": true,
+            "id": 1,
+            "target_id": 2
+        },
+        {
+            "type": "text_message",
+            "message": "Fine xd",
+            "author": "Me",
+            "send_time": "11:11",
+            "is_external": false,
+            "id": 1,
+            "target_id": 2
+        },
+        {
+            "type": "text_message",
+            "message": "Long msg \n\n\n\n\n\ntt\n\n\ntt",
+            "author": "User2",
+            "send_time": "11:11",
+            "is_external": true,
+            "id": 1,
+            "target_id": 2
+        },
+        {
+            "type": "text_message",
+            "message": "wooow\nman!",
+            "author": "Me",
+            "send_time": "11:11",
+            "is_external": false,
+            "id": 1,
+            "target_id": 2
+        }
+    ]
+}
