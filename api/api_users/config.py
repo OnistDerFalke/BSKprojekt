@@ -26,3 +26,11 @@ CSRF_SESSION_KEY = "6wqoySaqnaR1A2VykQvi3lLOoJTH3UW2"
 
 # Secret key for signing cookies
 SECRET_KEY = "At7aew9IV8H29XQeknUfSpXA2QFpLcCY"
+
+# Swagger configuration
+ADD_SWAGGER = True
+SWAGGER_URL = '/api/swagger'
+API_DEFINITION_FILE_URL = '/static/swagger/swagger.json'
+SWAGGER_CONFIG = {
+    'app name': 'Users API Application'
+}
