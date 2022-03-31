@@ -32,9 +32,9 @@ is needed. Application should lunch in a few seconds showing information about U
 | Request methods   |      /api/users      |  /api/users/\<int:user_id\> |
 |-------------------|:--------------------:|:---------------------------:|
 | GET               | :white_check_mark:   | :white_check_mark:          |
-| POTS              | `:white_check_mark:` | `:x:`                       |
-| PUT               | `:x:`                | `:white_check_mark:`        |
-| DELETE            | `:x:`                | `:white_check_mark:`        |
+| POTS              | :white_check_mark:   | :x:                         |
+| PUT               | :x:                  | :white_check_mark:          |
+| DELETE            | :x:                  | :white_check_mark:          |
 
 ### Swagger
 
