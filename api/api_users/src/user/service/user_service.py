@@ -1,5 +1,5 @@
-from api.api_users.src.user.repository.user_repository import UserRepository
-from api.api_users.src.user.models.models import User
+from api_users.src.user.repository.user_repository import UserRepository
+from api_users.src.user.models.models import User
 
 
 class UserService(object):
@@ -121,3 +121,11 @@ class UserService(object):
             return result
         else:
             return 0
+
+    @staticmethod
+    def is_user_port_unique(port: int) -> bool:
+        users = UserRepository.find_all()
+        users_ports = list(
+            map(lambda user: user.port, users)
+        )
+        return port not in users_ports

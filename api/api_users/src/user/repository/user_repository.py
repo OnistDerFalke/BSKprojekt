@@ -1,5 +1,5 @@
-from api.api_users.src.user.models.models import User
-from api.api_users.src import db
+from api_users.src.user.models.models import User
+from api_users.src import db
 
 from sqlalchemy import exc
 
