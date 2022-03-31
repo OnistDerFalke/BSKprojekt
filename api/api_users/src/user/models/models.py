@@ -1,4 +1,4 @@
-from api.api_users.src import db
+from api_users.src import db
 from datetime import datetime
 
 
@@ -27,8 +27,8 @@ class User(Base):
             "id": self.id,
             "name": self.name,
             "port": self.port,
-            "date_created": self.date_created,
-            "date_modified": self.date_modified
+            "date_created": self.date_created.isoformat(),
+            "date_modified": self.date_modified.isoformat()
         }
 
     def __repr__(self):
