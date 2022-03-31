@@ -10,7 +10,7 @@ using a graphic application created especially for this purpose.
 
 ### How to run the application
 
-#### Window
+#### Windows
 To run this application on Windows OS go in the console to the main *api_users* application folder is needed.
 Then enter in console command
 ```shell
@@ -31,7 +31,7 @@ is needed. Application should lunch in a few seconds showing information about U
 ### Available endpoints
 | Request methods   |      /api/users      |  /api/users/\<int:user_id\> |
 |-------------------|:--------------------:|:---------------------------:|
-| GET               | `:white_check_mark:` | `:white_check_mark:`        |
+| GET               | :white_check_mark:   | :white_check_mark:          |
 | POTS              | `:white_check_mark:` | `:x:`                       |
 | PUT               | `:x:`                | `:white_check_mark:`        |
 | DELETE            | `:x:`                | `:white_check_mark:`        |
