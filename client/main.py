@@ -3,12 +3,13 @@ from tkinter import *
 from tkinter import ttk
 from threading import Thread
 from PIL import Image, ImageTk
+import os
 
+import api_gate
 import chat
 import chat_refresher
 import cipher
 import communication
-import datamanager
 import submit
 import upload
 
@@ -73,15 +74,28 @@ users_icon_label.place(x=510, y=150, height=25, width=30)
 users_header = tk.Label(root, text="Users", font=("Raleway", 12, "bold"), bg="#212121", fg="white")
 users_header.place(x=540, y=150)
 
+# refresh users button
 
-# send button
+refresh_button = tk.Button(root,
+                        command=lambda: chat_refresher.refresh_users_list(),
+                        text="Update",
+                        font="Raleway", bg="#2b2b2b",
+                        fg="white",
+                        borderwidth=0,
+                        highlightthickness=0,
+                        activebackground='#212121')
+refresh_button.place(x=490, y=490, height=30, width=100)
+
+
+# submitting message from textbox and clearing it
 def submit_and_clear():
     message = text_message_box.get("1.0", "end-1c")
-    submit.send_message("User2", message, 2,
-                        chat.User("User1", 1, "localhost", 8080))
+    submit.send_message(communication.USER, message, communication.ID,
+                        chat.User(chat_refresher.ACTIVE_USERNAME, chat_refresher.ACTIVE_ID, chat_refresher.ACTIVE_PORT))
     text_message_box.delete("1.0", "end")
 
 
+# send button
 send_button = tk.Button(root,
                         image=send_icon,
                         command=lambda: submit_and_clear(),
@@ -114,11 +128,39 @@ upload_button = tk.Button(root,
                           activebackground='#212121')
 upload_button.place(x=515, y=532, height=30, width=30)
 
-# setting up
+
+# on app exit event
+def exit_handler():
+    api_gate.unreg_user_in_api(communication.USER, communication.PORT)
+    os._exit(0)
+
+
+# getting this client's ID from API
+def setup_id():
+    users = api_gate.get_users_list()
+    for user in users:
+        if user["name"] == communication.USER:
+            communication.ID = user["id"]
+            return
+    print("Could not set user's ID")
+
+
+# registering user in api
+api_gate.reg_user_in_api(communication.USER, communication.PORT)
+
+# setting ID from api
+setup_id()
+
+# injecting tkinter root to chat refresher
 chat_refresher.root_injector(root)
-datamanager.create_user_data_storage("User1", 1)
+
+# generating users' list for the first time
 chat.generate_user_list(root)
-chat.generate_chat(root)
-listening_thread = Thread(target=communication.receive_text_message, args=("localhost", 8081,))
+
+# running message listening thread
+listening_thread = Thread(target=communication.receive_text_message, args=("localhost", communication.PORT))
 listening_thread.start()
+
+# turning on app exit event handling
+root.protocol("WM_DELETE_WINDOW", exit_handler)
 root.mainloop()

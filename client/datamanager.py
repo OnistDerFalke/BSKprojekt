@@ -2,10 +2,19 @@ import json
 from os.path import exists
 
 
-def create_user_data_storage(name, id):
+# creating local json storage for conversation with username given
+def create_user_data_storage(name):
+
+    # preventing no name errors (but if it happens, it's probably a bug)
+    if name is None:
+        print("Could not create user data storage, name given was None "
+              "\n-> Is it not a bug? \n-> It should not happen!")
+        return
+
     filedir = "data/"
-    filename = str(id)+"_"+name+".json"
+    filename = name+".json"
     if not exists(filedir+filename):
+        print(f"Creating storage for conversation with {name}")
         with open(filedir+filename, 'w') as file:
             message_buffer = {
                 "message_list": []
@@ -14,9 +23,10 @@ def create_user_data_storage(name, id):
     return
 
 
+# adding new text message to local storage
 def add_text_message(name, realname, id, target_id, message, send_time, is_external, is_sent = True):
     filedir = "data/"
-    filename = str(target_id) + "_" + realname + ".json"
+    filename = realname + ".json"
     message_data = {
         "type": "text_message",
         "message": message,
@@ -33,12 +43,3 @@ def add_text_message(name, realname, id, target_id, message, send_time, is_exter
         file.seek(0)
         json.dump(file_data, file, indent=4)
     return message_data
-
-
-# watch out! index is counted from last message
-def read_text_message(name, id, index):
-    filedir = "data/"
-    filename = str(id) + "_" + name + ".json"
-    file = open(filedir+filename)
-    data = json.load(file)
-    return data["message_list"][len(data["message_list"])-index-1]

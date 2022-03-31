@@ -6,10 +6,12 @@ class CipherMode(Enum):
     ECB = "ECB"
 
 
+# current chosen mode
 mode = CipherMode.CBC
 mode_text = None
 
 
+# changing cipher mode
 def change_cipher_mode():
     global mode
     if mode == CipherMode.CBC:

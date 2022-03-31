@@ -3,6 +3,7 @@
   <component name="ProjectModuleManager">
     <modules>
       <module fileurl="file://$PROJECT_DIR$/.idea/FTGUI.iml" filepath="$PROJECT_DIR$/.idea/FTGUI.iml" />
+      <module fileurl="file://$PROJECT_DIR$/../api/.idea/api.iml" filepath="$PROJECT_DIR$/../api/.idea/api.iml" />
     </modules>
   </component>
 </project>

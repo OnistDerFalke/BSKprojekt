@@ -1,21 +1,29 @@
-import requests
 import tkinter as tk
 import math
 import json
+from functools import partial
 
+import api_gate
+import chat_refresher
+import communication
+import datamanager
+
+# lists of elements (for deleting existing widgets from screen)
 chat_elements_list = []
+users_elements_list = []
 
 
+# user template
 class User:
-    def __init__(self, name, id, host=None, port=None):
+    def __init__(self, name, id, port=None):
         self.name = name
         self.id = id
-        self.host = host
         self.port = port
 
 
+# message template
 class Message:
-    def __init__(self, is_external, receive_time, content, author, type="text_message", is_sent = True):
+    def __init__(self, is_external, receive_time, content, author, type="text_message", is_sent=True):
         self.is_external = is_external
         self.receive_time = receive_time
         self.content = content
@@ -24,43 +32,44 @@ class Message:
         self.is_sent = is_sent
 
 
-def show_user_chat(user):
-    return
-
-
-def get_all_users():
-    try:
-        response = requests.get("http://localhost:8080/api/users")
-        users = response.json()
-
-        # returns users list with names, id's and used ports
-        # TODO: Waiting for API
-        return users
-    except:
-        print("Could not connect to local server.")
-
-
+# generating users' list
 def generate_user_list(root):
-    # users = get_all_users()
+    dispose_users_list()
 
-    # Mock Users
-    users = [User("Alex", 0), User("Johny", 1), User("Anna", 2), User("Angela", 3), User("Geralt", 4)]
+    users = api_gate.get_users_list()
+    for user in users:
+        if user["name"] is None:
+            print("---> OH NO CHAT")
+        datamanager.create_user_data_storage(user["name"])
 
+    # adding existing users from API
+    users = []
+    users_json = api_gate.get_users_list()
+    for u in users_json:
+        users.append(User(u["name"], u["id"], u["port"]))
+
+    # creating buttons for each user
     height = 180
     offset_height = 25
     user_limit = 10
     user_counter = 0
     for user in users:
+        # user cannot write to himself
+        if user.name == communication.USER:
+            continue
+        # number of users seen is limited
         if user_counter >= user_limit:
             break
         button_text = tk.StringVar()
         button = tk.Button(root,
                            textvariable=button_text,
+                           command=partial(generate_chat, root, user.name, user.id),
                            font="Raleway", bg="#2b2b2b",
                            fg="white",
                            borderwidth=0,
                            highlightthickness=0,
                            activebackground='#212121')
+        users_elements_list.append(button)
         button.place(x=500, y=height, height=20, width=100)
         button_text.set(user.name)
         height += offset_height
@@ -68,19 +77,31 @@ def generate_user_list(root):
     return
 
 
-def find_author(messages):
-    for message in messages:
-        if message.author != "Me":
-            return message.author
-    return "Unknown"
+# generating chat (messages view)
+def generate_chat(root, username, id):
 
+    # user has no active chat window with target
+    if username is None:
+        return
 
-def generate_chat(root):
+    dispose_chat()
+
+    # creating data storage for target
+    datamanager.create_user_data_storage(username)
+
+    # saving info about current target (port is loaded from API)
+    chat_refresher.ACTIVE_USERNAME = username
+    chat_refresher.ACTIVE_ID = id
+    users = api_gate.get_users_list()
+    for user in users:
+        if user["name"] == username:
+            chat_refresher.ACTIVE_PORT = user["port"]
+
     global chat_elements_list
     messages = []
 
     # importing conversation from json
-    with open('data/1_User1.json') as json_file:
+    with open('data/'+username+'.json') as json_file:
         data = json.load(json_file)
         for msg in data["message_list"]:
             messages.append(Message(msg["is_external"], msg["send_time"], msg["message"], msg["author"],
@@ -103,7 +124,7 @@ def generate_chat(root):
             msg_counter += 1
 
     # chat title widget
-    chat_title = tk.Label(root, text=find_author(messages), font=("Raleway", 16, "bold"), bg="#212121", fg="white")
+    chat_title = tk.Label(root, text=chat_refresher.ACTIVE_USERNAME, font=("Raleway", 16, "bold"), bg="#212121", fg="white")
     chat_title.place(x=125, y=145, height=30, width=300)
     chat_elements_list.append(chat_title)
 
@@ -129,13 +150,11 @@ def generate_chat(root):
             x_location = 25
             x_label_location = x_location - 7
             x_time_label_location = x_location + 300
-            anchor = 'w'
             label_color = "#bababa"
         else:
             x_location = 175
             x_label_location = x_location + 302
             x_time_label_location = x_location - 22
-            anchor = 'e'
             label_color = "#333333"
 
         if message.is_sent or (not message.is_sent and message.is_external):
@@ -178,6 +197,13 @@ def generate_chat(root):
     return
 
 
+# removing chat from the screen
 def dispose_chat():
     for element in chat_elements_list:
+        element.destroy()
+
+
+# removing users' list from the screen
+def dispose_users_list():
+    for element in users_elements_list:
         element.destroy()
