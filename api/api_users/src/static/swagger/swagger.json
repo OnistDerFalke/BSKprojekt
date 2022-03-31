@@ -1,0 +1,101 @@
+{
+  "swagger": "2.0",
+
+  "info": {
+    "description": "An application that allows you to manage users",
+    "version": "1.0.0",
+    "title": "Users API"
+  },
+
+  "basePath": "api/",
+  "host": "127.0.0.1:8080/",
+  "schemes": ["http"],
+  "produces": ["application/json"],
+  "consumes": ["application/json"],
+
+  "tags": [
+    {
+      "name": "Users",
+      "description": "Requests allow to users managing"
+    }
+  ],
+  "paths": {
+    "/users": {
+      "get": {
+        "tags": ["Users"],
+        "description": "Get all existing users",
+        "operationId": "getAllUsers",
+        "produces": ["application/json"],
+        "responses": {
+          "200": {
+            "description": "All users response",
+          }
+        }
+      },
+      "post": {
+        "tags": ["Users"],
+        "description": "Add new User",
+        "operationId": "addUser",
+        "produces": ["application/json"],
+        "responses": {
+          "201": {
+            "description": "User created"
+          },
+          "400": {
+            "description": "Invalid request"
+          }
+        }
+      }
+    },
+    "/users/<user_id>": {
+      "get": {
+        "tags": ["Users"],
+        "description": "Get details of existing user",
+        "operationId": "getUserById",
+        "produces": ["application/json"],
+        "responses": {
+          "200": {
+            "description": "User response"
+          },
+          "404": {
+            "description": "User with provided id was not found"
+          }
+        }
+      },
+      "put": {
+        "tags": ["Users"],
+        "description": "Get all existing users",
+        "operationId": "updateUserById",
+        "produces": ["application/json"],
+        "responses": {
+          "202": {
+            "description": "User was updated"
+          },
+          "400": {
+            "description": "Invalid request"
+          },
+          "404": {
+            "description": "User with provided id was not found"
+          }
+        }
+      },
+      "delete": {
+        "tags": ["Users"],
+        "description": "Get all existing users",
+        "operationId": "deleteUserById",
+        "produces": ["application/json"],
+        "responses": {
+          "202": {
+            "description": "User was deleted"
+          },
+          "400": {
+            "description": "Invalid request"
+          },
+          "404": {
+            "description": "User with provided id was not found"
+          }
+        }
+      }
+    }
+  }
+}

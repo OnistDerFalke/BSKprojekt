@@ -1,0 +1,114 @@
+// =====================================================
+//                 Users API Requests
+// =====================================================
+
+
+###
+// Get all existing users
+GET http://localhost:8080/api/users
+
+###
+// Getting details of exising user
+GET http://localhost:8080/api/users/1
+
+###
+// Getting NOT exising user
+GET http://localhost:8080/api/users/1000
+
+###
+// Add proper user
+POST http://localhost:8080/api/users
+Content-Type: application/json
+
+{
+  "name": "User name",
+  "port": 12346
+}
+
+###
+// Add user with NOT UNIQUE port
+POST http://localhost:8080/api/users
+Content-Type: application/json
+
+{
+  "name": "Second user",
+  "port": 12346
+}
+
+###
+
+// Add NOT proper user
+POST http://localhost:8080/api/users
+Content-Type: application/json
+
+{
+  "port": 10234
+}
+
+###
+// Add NOT proper user
+POST http://localhost:8080/api/users
+Content-Type: application/json
+
+{
+  "name": "example"
+}
+
+###
+// Delete existing user
+DELETE http://localhost:8080/api/users/1
+
+###
+
+// Delete NOT existing user
+DELETE http://localhost:8080/api/users/1000
+
+###
+// Update existing user with proper values
+PUT http://localhost:8080/api/users/1
+Content-Type: application/json
+
+{
+  "name": "name changed",
+  "port": 10000
+}
+
+###
+// Update not existing user
+PUT http://localhost:8080/api/users/1000
+Content-Type: application/json
+
+{
+  "name": "name changed",
+  "port": 10000
+}
+
+###
+// Update only name of existing user
+PUT http://localhost:8080/api/users/1
+Content-Type: application/json
+
+{
+  "name": "name2"
+}
+
+###
+// Update only port of existing user
+PUT http://localhost:8080/api/users/1
+Content-Type: application/json
+
+{
+  "port": 12345
+}
+
+###
+
+// Update NOT UNIQUE port of existing user
+PUT http://localhost:8080/api/users/1
+Content-Type: application/json
+
+{
+  "port": 12345
+}
+
+###
