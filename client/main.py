@@ -1,6 +1,6 @@
 import tkinter as tk
 from tkinter import *
-from tkinter import ttk
+from tkinter import ttk, simpledialog
 from threading import Thread
 from PIL import Image, ImageTk
 import os
@@ -19,6 +19,46 @@ root.title = "GetPost"
 root.geometry("600x600")
 root.resizable(width=False, height=False)
 root['bg'] = '#212121'
+
+
+# registering user, unblocking widgets and destroying registration widget
+def register_user():
+    communication.USER = username_entry.get()
+    communication.PORT = int(port_entry.get())
+    username_entry.destroy()
+    port_entry.destroy()
+    register_button.destroy()
+    username_label.destroy()
+    port_label.destroy()
+    communication.REGISTERED = True
+
+
+# username text near the entry
+username_label = tk.Label(root, text="Username: ", font=("Raleway", 10), bg="#212121", fg="white")
+username_label.place(x=250, y=210, anchor='e')
+
+# port text near the entry
+port_label = tk.Label(root, text="Port: ", font=("Raleway", 10), bg="#212121", fg="white")
+port_label.place(x=250, y=240, anchor='e')
+
+# entry for username
+username_entry = Entry(root)
+username_entry.place(x=250, y=200, height=20, width=100)
+
+# entry for port
+port_entry = Entry(root)
+port_entry.place(x=250, y=230, height=20, width=100)
+
+# register submit button
+register_button = tk.Button(root,
+                        command=lambda: register_user(),
+                        text="Register",
+                        font="Raleway", bg="#2b2b2b",
+                        fg="white",
+                        borderwidth=0,
+                        highlightthickness=0,
+                        activebackground='#212121')
+register_button.place(x=250, y=260, height=20, width=100)
 
 # logo
 logo = Image.open('images/logo.png')
@@ -89,6 +129,8 @@ refresh_button.place(x=490, y=490, height=30, width=100)
 
 # submitting message from textbox and clearing it
 def submit_and_clear():
+    if not communication.REGISTERED:
+        return
     message = text_message_box.get("1.0", "end-1c")
     submit.send_message(communication.USER, message, communication.ID,
                         chat.User(chat_refresher.ACTIVE_USERNAME, chat_refresher.ACTIVE_ID, chat_refresher.ACTIVE_PORT))
@@ -135,22 +177,6 @@ def exit_handler():
     os._exit(0)
 
 
-# getting this client's ID from API
-def setup_id():
-    users = api_gate.get_users_list()
-    for user in users:
-        if user["name"] == communication.USER:
-            communication.ID = user["id"]
-            return
-    print("Could not set user's ID")
-
-
-# registering user in api
-api_gate.reg_user_in_api(communication.USER, communication.PORT)
-
-# setting ID from api
-setup_id()
-
 # injecting tkinter root to chat refresher
 chat_refresher.root_injector(root)
 
@@ -158,9 +184,10 @@ chat_refresher.root_injector(root)
 chat.generate_user_list(root)
 
 # running message listening thread
-listening_thread = Thread(target=communication.receive_text_message, args=("localhost", communication.PORT))
+listening_thread = Thread(target=communication.receive_text_message)
 listening_thread.start()
 
 # turning on app exit event handling
 root.protocol("WM_DELETE_WINDOW", exit_handler)
+
 root.mainloop()

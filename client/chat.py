@@ -34,6 +34,11 @@ class Message:
 
 # generating users' list
 def generate_user_list(root):
+
+    # unregistered user cannot have active users shown
+    if not communication.REGISTERED:
+        return
+
     dispose_users_list()
 
     users = api_gate.get_users_list()
@@ -79,6 +84,10 @@ def generate_user_list(root):
 
 # generating chat (messages view)
 def generate_chat(root, username, id):
+
+    # unregistered user cannot have chats
+    if not communication.REGISTERED:
+        return
 
     # user has no active chat window with target
     if username is None:

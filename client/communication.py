@@ -1,15 +1,30 @@
 import socket
 import pickle
 from threading import Thread
+import time
 
 import chat_refresher
 import datamanager
+import api_gate
 
 
 # basic info needed to start the client (ID taken from API)
-USER = "A"
-PORT = 45671
+USER = None
+PORT = None
 ID = None
+HOST = "localhost"
+REGISTERED = False
+
+
+# getting this client's ID from API
+def setup_id():
+    users = api_gate.get_users_list()
+    for user in users:
+        if user["name"] == USER:
+            global ID
+            ID = user["id"]
+            return
+    print("Could not set user's ID")
 
 
 # sending text message to target on port where it listens to
@@ -37,13 +52,25 @@ def verify_connection(host, port):
 
 
 # listening to incoming messages
-def receive_text_message(host, port):
+def receive_text_message():
+    # unregistered user cannot listen
+    while not REGISTERED:
+        time.sleep(1)
+
+    # registering user in api
+    api_gate.reg_user_in_api(USER, PORT)
+
+    # setting ID from api
+    if ID is None:
+        setup_id()
+        print(f'Current user ID is now: {ID}')
+
     with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
-        s.bind((host, port))
+        s.bind((HOST, PORT))
         s.listen()
         print("Waiting for connection accept..")
         while True:
-            print(f"Listening on {host}:{port}")
+            print(f"Listening on {HOST}:{PORT}")
             conn, adr = s.accept()
             print("Connection accepted.")
             Thread(target=receive_from_socket, args=(conn, adr,)).start()

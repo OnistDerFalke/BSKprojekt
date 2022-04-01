@@ -2,6 +2,7 @@ import api_gate
 import chat
 import datamanager
 
+import communication
 # tkinter root using to adding widgets from other scripts
 ROOT = None
 
@@ -25,6 +26,8 @@ def refresh_chat():
 
 # refreshing users' list -> update with new users available
 def refresh_users_list():
+    if not communication.REGISTERED:
+        return
     users = api_gate.get_users_list()
     for user in users:
         datamanager.create_user_data_storage(user["name"])
