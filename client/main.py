@@ -26,13 +26,17 @@ def register_user():
     users = api_gate.get_users_list()
 
     # check if port or username is not taken
-    for user in users:
-        if user["name"] == username_entry.get():
-            regerror_content.set("Username is already taken.")
-            return
-        if user["port"] == int(port_entry.get()):
-            regerror_content.set("Port is already taken.")
-            return
+    if users is not None:
+        for user in users:
+            if user["name"] == username_entry.get():
+                regerror_content.set("Username is already taken.")
+                return
+            if user["port"] == int(port_entry.get()):
+                regerror_content.set("Port is already taken.")
+                return
+    else:
+        print("Cannot register, no API connection.")
+        return
 
     # closing register widget
     communication.USER = username_entry.get()

@@ -41,15 +41,12 @@ def generate_user_list(root):
 
     dispose_users_list()
 
-    users = api_gate.get_users_list()
-    for user in users:
-        if user["name"] is None:
-            print("---> OH NO CHAT")
+    users_json = api_gate.get_users_list()
+    for user in users_json:
         datamanager.create_user_data_storage(user["name"])
 
     # adding existing users from API
     users = []
-    users_json = api_gate.get_users_list()
     for u in users_json:
         users.append(User(u["name"], u["id"], u["port"]))
 
@@ -93,8 +90,6 @@ def generate_chat(root, username, id):
     if username is None:
         return
 
-    dispose_chat()
-
     # creating data storage for target
     datamanager.create_user_data_storage(username)
 
@@ -106,6 +101,7 @@ def generate_chat(root, username, id):
         if user["name"] == username:
             chat_refresher.ACTIVE_PORT = user["port"]
 
+    dispose_chat()
     global chat_elements_list
     messages = []
 

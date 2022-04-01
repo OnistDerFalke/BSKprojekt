@@ -28,6 +28,7 @@ def refresh_chat():
 def refresh_users_list():
     if not communication.REGISTERED:
         return
+
     users = api_gate.get_users_list()
     for user in users:
         datamanager.create_user_data_storage(user["name"])
