@@ -1,6 +1,6 @@
 import tkinter as tk
 from tkinter import *
-from tkinter import ttk, simpledialog
+from tkinter import ttk
 from threading import Thread
 from PIL import Image, ImageTk
 import os
@@ -23,15 +23,33 @@ root['bg'] = '#212121'
 
 # registering user, unblocking widgets and destroying registration widget
 def register_user():
+    users = api_gate.get_users_list()
+
+    # check if port or username is not taken
+    for user in users:
+        if user["name"] == username_entry.get():
+            regerror_content.set("Username is already taken.")
+            return
+        if user["port"] == int(port_entry.get()):
+            regerror_content.set("Port is already taken.")
+            return
+
+    # closing register widget
     communication.USER = username_entry.get()
     communication.PORT = int(port_entry.get())
     username_entry.destroy()
     port_entry.destroy()
     register_button.destroy()
     username_label.destroy()
+    regerror_label.destroy()
     port_label.destroy()
     communication.REGISTERED = True
 
+
+# register error label
+regerror_content = tk.StringVar()
+regerror_label = tk.Label(root, textvariable=regerror_content, font=("Raleway", 10), bg="#212121", fg="red")
+regerror_label.place(x=200, y=170)
 
 # username text near the entry
 username_label = tk.Label(root, text="Username: ", font=("Raleway", 10), bg="#212121", fg="white")
