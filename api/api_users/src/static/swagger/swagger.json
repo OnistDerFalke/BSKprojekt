@@ -29,6 +29,12 @@
         "responses": {
           "200": {
             "description": "All users response",
+            "schema": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/GetUsersResponse"
+              }
+            }
           }
         }
       },
@@ -37,9 +43,22 @@
         "description": "Add new User",
         "operationId": "addUser",
         "produces": ["application/json"],
+        "parameters": [
+          {
+            "in": "body",
+            "name": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/PostUser"
+            }
+          }
+        ],
         "responses": {
           "201": {
-            "description": "User created"
+            "description": "User created",
+            "schema": {
+              "$ref": "#/definitions/PostUserResponse"
+            }
           },
           "400": {
             "description": "Invalid request"
@@ -47,15 +66,28 @@
         }
       }
     },
-    "/users/<user_id>": {
+    "/users/{user_id}": {
       "get": {
         "tags": ["Users"],
         "description": "Get details of existing user",
         "operationId": "getUserById",
         "produces": ["application/json"],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "user_id",
+            "required": true,
+            "type": "integer",
+            "format": "int32",
+            "minimum": 1
+          }
+        ],
         "responses": {
           "200": {
-            "description": "User response"
+            "description": "User response",
+            "schema": {
+              "$ref": "#/definitions/GetUserResponse"
+            }
           },
           "404": {
             "description": "User with provided id was not found"
@@ -64,9 +96,27 @@
       },
       "put": {
         "tags": ["Users"],
-        "description": "Get all existing users",
+        "description": "Update an existing user with provided id",
         "operationId": "updateUserById",
         "produces": ["application/json"],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "user_id",
+            "required": true,
+            "type": "integer",
+            "format": "int32",
+            "minimum": 1
+          },
+          {
+            "in": "body",
+            "name": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/PutUser"
+            }
+          }
+        ],
         "responses": {
           "202": {
             "description": "User was updated"
@@ -84,6 +134,16 @@
         "description": "Get all existing users",
         "operationId": "deleteUserById",
         "produces": ["application/json"],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "user_id",
+            "required": true,
+            "type": "integer",
+            "format": "int32",
+            "minimum": 0
+          }
+        ],
         "responses": {
           "202": {
             "description": "User was deleted"
@@ -94,6 +154,80 @@
           "404": {
             "description": "User with provided id was not found"
           }
+        }
+      }
+    }
+  },
+  "definitions": {
+    "PostUser": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "port": {
+          "type": "integer"
+        }
+      }
+    },
+    "PostUserResponse": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "integer",
+          "format": "int32"
+        }
+      }
+    },
+    "GetUsersResponse": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "name": {
+          "type": "string"
+        },
+        "port":{
+          "type": "integer",
+          "format": "int32"
+        }
+      }
+    },
+    "GetUserResponse": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "name": {
+          "type": "string"
+        },
+        "port":{
+          "type": "integer",
+          "format": "int32"
+        },
+        "date_created": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "date-modified": {
+          "type": "string",
+          "format": "date-time"
+        }
+      }
+    },
+    "PutUser": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "port": {
+          "type": "integer",
+          "format": "int32"
         }
       }
     }
