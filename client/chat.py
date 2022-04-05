@@ -1,7 +1,9 @@
+import os
 import tkinter as tk
 import math
 import json
 from functools import partial
+import subprocess
 
 import api_gate
 import chat_refresher
@@ -34,7 +36,6 @@ class Message:
 
 # generating users' list
 def generate_user_list(root):
-
     # unregistered user cannot have active users shown
     if not communication.REGISTERED:
         return
@@ -81,7 +82,6 @@ def generate_user_list(root):
 
 # generating chat (messages view)
 def generate_chat(root, username, id):
-
     # unregistered user cannot have chats
     if not communication.REGISTERED:
         return
@@ -106,7 +106,7 @@ def generate_chat(root, username, id):
     messages = []
 
     # importing conversation from json
-    with open('data/'+username+'.json') as json_file:
+    with open('data/' + username + '.json') as json_file:
         data = json.load(json_file)
         for msg in data["message_list"]:
             messages.append(Message(msg["is_external"], msg["send_time"], msg["message"], msg["author"],
@@ -129,7 +129,8 @@ def generate_chat(root, username, id):
             msg_counter += 1
 
     # chat title widget
-    chat_title = tk.Label(root, text=chat_refresher.ACTIVE_USERNAME, font=("Raleway", 16, "bold"), bg="#212121", fg="white")
+    chat_title = tk.Label(root, text=chat_refresher.ACTIVE_USERNAME, font=("Raleway", 16, "bold"), bg="#212121",
+                          fg="white")
     chat_title.place(x=125, y=145, height=30, width=300)
     chat_elements_list.append(chat_title)
 
@@ -167,10 +168,21 @@ def generate_chat(root, username, id):
         else:
             cloud_color = "#ad0000"
 
+        if message.type == "text_message":
+            chat_cloud = tk.Text(root, font=("Raleway", 8), bg=cloud_color,
+                                 fg="white", borderwidth=0, highlightthickness=0)
+            chat_cloud.insert(tk.END, os.path.basename(message.content))
+            chat_cloud.config(state='disabled')
+        elif message.type == "upload_message":
+            dirpath = os.path.dirname(message.content)
+            rev_path = dirpath.replace('/', '\\')
+            print('explorer "' + rev_path + '"')
+            chat_cloud = tk.Button(root, font=("Raleway", 8), bg=cloud_color,
+                                   command=lambda: subprocess.Popen('explorer "' +
+                                                                    rev_path + '"'),
+                                   fg="white", borderwidth=0, highlightthickness=0)
+            chat_cloud["text"] = os.path.basename(message.content)
         cloud_label = tk.Label(root, text="", bg=label_color)
-        chat_cloud = tk.Text(root, font=("Raleway", 8), bg=cloud_color, fg="white", borderwidth=0, highlightthickness=0)
-        chat_cloud.insert(tk.END, message.content)
-        chat_cloud.config(state='disabled')
         time_label = tk.Label(root, text=message.receive_time, font=("Raleway", 6), bg="#212121", fg="white")
 
         # cutting long message to be shown even if it's too long

@@ -3,6 +3,8 @@ import submit
 
 import communication
 
+UPLOADED = False
+
 
 # uploading file from local disc
 def upload_file():
@@ -10,4 +12,6 @@ def upload_file():
         return
     submit.file = filedialog.askopenfilename()
     submit.filePath.set(submit.file)
+    global UPLOADED
+    UPLOADED = True
     return

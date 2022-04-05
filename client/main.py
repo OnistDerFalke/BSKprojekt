@@ -1,6 +1,5 @@
 import tkinter as tk
 from tkinter import *
-from tkinter import ttk
 from threading import Thread
 from PIL import Image, ImageTk
 import os
@@ -12,6 +11,7 @@ import cipher
 import communication
 import submit
 import upload
+import progress_bar
 
 # window settings
 root = tk.Tk()
@@ -73,13 +73,13 @@ port_entry.place(x=250, y=230, height=20, width=100)
 
 # register submit button
 register_button = tk.Button(root,
-                        command=lambda: register_user(),
-                        text="Register",
-                        font="Raleway", bg="#2b2b2b",
-                        fg="white",
-                        borderwidth=0,
-                        highlightthickness=0,
-                        activebackground='#212121')
+                            command=lambda: register_user(),
+                            text="Register",
+                            font="Raleway", bg="#2b2b2b",
+                            fg="white",
+                            borderwidth=0,
+                            highlightthickness=0,
+                            activebackground='#212121')
 register_button.place(x=250, y=260, height=20, width=100)
 
 # logo
@@ -87,15 +87,6 @@ logo = Image.open('images/logo.png')
 logo = ImageTk.PhotoImage(logo)
 logo_label = tk.Label(image=logo, borderwidth=0, highlightthickness=0)
 logo_label.place(x=250, y=20)
-
-# progress bar
-pb_style = ttk.Style()
-pb_style.theme_use('clam')
-pb_style.configure("red.Horizontal.TProgressbar", foreground='#212121', background='#212121', throughcolor='#212121')
-progress_bar = ttk.Progressbar(root, orient='horizontal', mode='indeterminate', length=450,
-                               style='red.Horizontal.TProgressbar')
-progress_bar.place(x=25, y=576, height=10)
-progress_bar.place_forget()
 
 # send icon
 send_icon = Image.open('images/send_icon.png')
@@ -139,13 +130,13 @@ users_header.place(x=540, y=150)
 # refresh users button
 
 refresh_button = tk.Button(root,
-                        command=lambda: chat_refresher.refresh_users_list(),
-                        text="Update",
-                        font="Raleway", bg="#2b2b2b",
-                        fg="white",
-                        borderwidth=0,
-                        highlightthickness=0,
-                        activebackground='#212121')
+                           command=lambda: chat_refresher.refresh_users_list(),
+                           text="Update",
+                           font="Raleway", bg="#2b2b2b",
+                           fg="white",
+                           borderwidth=0,
+                           highlightthickness=0,
+                           activebackground='#212121')
 refresh_button.place(x=490, y=490, height=30, width=100)
 
 
@@ -153,9 +144,13 @@ refresh_button.place(x=490, y=490, height=30, width=100)
 def submit_and_clear():
     if not communication.REGISTERED:
         return
-    message = text_message_box.get("1.0", "end-1c")
-    submit.send_message(communication.USER, message, communication.ID,
-                        chat.User(chat_refresher.ACTIVE_USERNAME, chat_refresher.ACTIVE_ID, chat_refresher.ACTIVE_PORT))
+    if upload.UPLOADED:
+        submit.send_upload(communication.USER, submit.filePath, communication.ID,
+                           chat.User(chat_refresher.ACTIVE_USERNAME, chat_refresher.ACTIVE_ID,
+                                     chat_refresher.ACTIVE_PORT))
+    else:
+        submit.send_message(communication.USER, text_message_box.get("1.0", "end-1c"), communication.ID,
+                            chat.User(chat_refresher.ACTIVE_USERNAME, chat_refresher.ACTIVE_ID, chat_refresher.ACTIVE_PORT))
     text_message_box.delete("1.0", "end")
 
 
@@ -192,6 +187,8 @@ upload_button = tk.Button(root,
                           activebackground='#212121')
 upload_button.place(x=515, y=532, height=30, width=30)
 
+# initializing the progress bar
+progress_bar.init()
 
 # on app exit event
 def exit_handler():
@@ -206,7 +203,7 @@ chat_refresher.root_injector(root)
 chat.generate_user_list(root)
 
 # running message listening thread
-listening_thread = Thread(target=communication.receive_text_message)
+listening_thread = Thread(target=communication.receive_message)
 listening_thread.start()
 
 # turning on app exit event handling
