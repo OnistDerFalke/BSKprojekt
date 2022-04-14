@@ -17,10 +17,11 @@ import upload
 SEPARATOR = "<SEPARATOR>"
 BUFFER_SIZE = 4096  # send 4096 bytes each time step
 
-# basic info needed to start the client (ID taken from API)
+# basic info needed to start the client (ID taken from API), password here is a local key
 USER = None
 PORT = None
 ID = None
+PASSWORD = None
 HOST = "localhost"
 REGISTERED = False
 
