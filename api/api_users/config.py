@@ -34,3 +34,6 @@ API_DEFINITION_FILE_URL = '/static/swagger/swagger.json'
 SWAGGER_CONFIG = {
     'app name': 'Users API Application'
 }
+
+# User authentication
+USERS_KEYS_FOLDER_PATH = os.path.join(BASE_DIR, 'src', 'static', 'keys')

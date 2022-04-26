@@ -1,5 +1,7 @@
 import json
+import os
 
+from api_users.src.modules.decorators import token_authentication_needed
 from api_users.src.user.service.user_service import UserService
 from api_users.src.user.models.models import User
 from api_users.src.user.dto.dto import short_user, full_user
@@ -14,12 +16,14 @@ class UsersAPI(Resource):
     Source url is /api/users
     """
 
+    # @token_authentication_needed
     @marshal_with(short_user)
     def get(self):
         """ Get all existing Users """
         users = UserService.find_all()
         return users, 200
 
+    # @token_authentication_needed
     def post(self):
         """ Adds new User """
         json_req = request.get_json()
@@ -51,6 +55,7 @@ class UsersByIdAPI(Resource):
     Source url is /api/users/<int:user_id>
     """
 
+    # @token_authentication_needed
     @marshal_with(full_user)
     def get(self, user_id):
         """ Get existing User with provided id """
@@ -59,7 +64,8 @@ class UsersByIdAPI(Resource):
             return user.dict
         else:
             return Response(status=404)
-    
+
+    # @token_authentication_needed
     def put(self, user_id: int):
         """ Update existing User with provided id """
         user = UserService.find(user_id)
@@ -82,7 +88,8 @@ class UsersByIdAPI(Resource):
             return Response(status=202)
         else:
             return Response(status=status)
-    
+
+    # @token_authentication_needed
     def delete(self, user_id: int):
         """ Delete existing User with provided id """
         user = UserService.find(user_id)
