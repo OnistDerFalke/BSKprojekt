@@ -75,6 +75,7 @@ def send_upload_message(host, port, message):
                 progress_bar.dispose()
                 submit.filePath.set("")
                 submit.file = None
+                upload.UPLOADED = False
         except ConnectionRefusedError:
             print(f"Connection refused to {host}:{port}")
     return
