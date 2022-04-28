@@ -5,6 +5,7 @@ import datamanager
 from threading import Thread
 
 import chat_refresher
+import upload
 
 # info about uploaded file
 file = None
@@ -38,6 +39,10 @@ def send_message(name, message, id, target):
 def send_upload(name, filepath, id, target):
     # sending upload when target was not chosen -> abort sending
     if chat_refresher.ACTIVE_USERNAME is None:
+        return
+
+    if not upload.UPLOADED or filepath.get() == '':
+        upload.UPLOADED = False
         return
 
     # adding message that client send to target to local message data

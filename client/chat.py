@@ -10,6 +10,8 @@ import chat_refresher
 import communication
 import datamanager
 
+ACTIVE_CHAT = None
+
 # lists of elements (for deleting existing widgets from screen)
 chat_elements_list = []
 users_elements_list = []
@@ -89,6 +91,9 @@ def generate_chat(root, username, id):
     # user has no active chat window with target
     if username is None:
         return
+
+    global ACTIVE_CHAT
+    ACTIVE_CHAT = username
 
     # creating data storage for target
     datamanager.create_user_data_storage(username)

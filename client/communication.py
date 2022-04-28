@@ -5,6 +5,7 @@ import time
 import os
 from path import Path
 
+import chat
 import chat_refresher
 import datamanager
 import api_gate
@@ -61,11 +62,13 @@ def send_upload_message(host, port, message):
             filesize = os.path.getsize(filename)
             msg = pickle.dumps(message)
             s.send(msg)
+
+            progress_bar.init()
             progress_bar.show()
             bytes_sent = 0
             # transferring packets of data to target
             with open(filename, "rb") as f:
-                while True:
+                while bytes_sent <= filesize:
                     bytes_read = f.read(BUFFER_SIZE)
                     if not bytes_read:
                         break
@@ -136,16 +139,21 @@ def receive_from_socket(conn, adr):
                 datamanager.add_upload_message(data["author"], data["author"], data["target_id"],
                                                data["id"], data["message"], data["send_time"], data["file_size"], True)
 
-                progress_bar.show()
+                print(chat.ACTIVE_CHAT)
+                print(data["author"])
+                if chat.ACTIVE_CHAT == data["author"]:
+                    progress_bar.init()
+                    progress_bar.show()
                 bytes_recv = 0
                 with open('downloads/'+filename, "wb") as f:
-                    while True:
+                    while bytes_recv <= filesize:
                         bytes_read = conn.recv(BUFFER_SIZE)
                         if not bytes_read:
                             break
                         f.write(bytes_read)
                         bytes_recv += BUFFER_SIZE
-                        progress_bar.bar['value'] = (bytes_recv / filesize) * 100
+                        if chat.ACTIVE_CHAT == data["author"]:
+                            progress_bar.bar['value'] = (bytes_recv / filesize) * 100
                     progress_bar.dispose()
                     chat_refresher.refresh_chat()
                 upload.UPLOADED = False
