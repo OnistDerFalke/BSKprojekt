@@ -19,12 +19,27 @@
       "description": "Requests allow to users managing"
     }
   ],
+
+  "securityDefinitions": {
+    "tokenAuth": {
+      "type": "apiKey",
+      "name": "token",
+      "in": "header",
+      "description": "Generated in server side token needed to successful authentication. Default key for swagger is {\"login\": \"swagger\", \"secret\": \"VGocPnk+SVfExl16TkrypU+8YoqlJaDzIaNh69RftGJjQPqNTholWrYqXNFhbhy7\", \"iv\": \"4UAaZzmD1VaxxRZP0fc1EA==\"}"
+    }
+  },
+
   "paths": {
     "/users": {
       "get": {
         "tags": ["Users"],
         "description": "Get all existing users",
         "operationId": "getAllUsers",
+        "security": [
+          {
+            "tokenAuth": []
+          }
+        ],
         "produces": ["application/json"],
         "responses": {
           "200": {
@@ -42,6 +57,11 @@
         "tags": ["Users"],
         "description": "Add new User",
         "operationId": "addUser",
+        "security": [
+          {
+            "tokenAuth": []
+          }
+        ],
         "produces": ["application/json"],
         "parameters": [
           {
@@ -71,6 +91,11 @@
         "tags": ["Users"],
         "description": "Get details of existing user",
         "operationId": "getUserById",
+        "security": [
+          {
+            "tokenAuth": []
+          }
+        ],
         "produces": ["application/json"],
         "parameters": [
           {
@@ -98,6 +123,11 @@
         "tags": ["Users"],
         "description": "Update an existing user with provided id",
         "operationId": "updateUserById",
+        "security": [
+          {
+            "tokenAuth": []
+          }
+        ],
         "produces": ["application/json"],
         "parameters": [
           {
@@ -133,6 +163,11 @@
         "tags": ["Users"],
         "description": "Get all existing users",
         "operationId": "deleteUserById",
+        "security": [
+          {
+            "tokenAuth": []
+          }
+        ],
         "produces": ["application/json"],
         "parameters": [
           {
