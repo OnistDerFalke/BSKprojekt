@@ -1,12 +1,18 @@
 import tkinter as tk
 from tkinter import *
-from tkinter import ttk
+from threading import Thread
 from PIL import Image, ImageTk
+import os
 
+import api_gate
 import chat
+import chat_refresher
 import cipher
+import communication
 import submit
 import upload
+import progress_bar
+import key_manager
 
 # window settings
 root = tk.Tk()
@@ -15,20 +21,90 @@ root.geometry("600x600")
 root.resizable(width=False, height=False)
 root['bg'] = '#212121'
 
+
+# registering user, unblocking widgets and destroying registration widget
+def register_user():
+    users = api_gate.get_users_list()
+
+    # check if port or username is not taken
+    if users is not None:
+        for user in users:
+            if 65535 < int(port_entry.get()) or int(port_entry.get()) < 1:
+                regerror_content.set("This port cannot be used.")
+                return
+            if user["name"] == username_entry.get():
+                regerror_content.set("Username is already taken.")
+                return
+            if user["port"] == int(port_entry.get()):
+                regerror_content.set("Port is already taken.")
+                return
+            if len(password_entry.get()) < 8:
+                regerror_content.set("Password is too short (min. 8 characters)")
+                return
+    else:
+        print("Cannot register, no API connection.")
+        return
+
+    # closing register widget
+    communication.USER = username_entry.get()
+    communication.PORT = int(port_entry.get())
+    communication.PASSWORD = key_manager.hash_password(password_entry.get())
+    username_entry.destroy()
+    port_entry.destroy()
+    password_entry.destroy()
+    register_button.destroy()
+    username_label.destroy()
+    regerror_label.destroy()
+    port_label.destroy()
+    password_label.destroy()
+    communication.REGISTERED = True
+
+
+# register error label
+regerror_content = tk.StringVar()
+regerror_label = tk.Label(root, textvariable=regerror_content, font=("Raleway", 10), bg="#212121", fg="red")
+regerror_label.place(x=200, y=170)
+
+# username text near the entry
+username_label = tk.Label(root, text="Username: ", font=("Raleway", 10), bg="#212121", fg="white")
+username_label.place(x=250, y=210, anchor='e')
+
+# port text near the entry
+port_label = tk.Label(root, text="Port: ", font=("Raleway", 10), bg="#212121", fg="white")
+port_label.place(x=250, y=240, anchor='e')
+
+# password text near the entry
+password_label = tk.Label(root, text="Password: ", font=("Raleway", 10), bg="#212121", fg="white")
+password_label.place(x=250, y=270, anchor='e')
+
+# entry for username
+username_entry = Entry(root)
+username_entry.place(x=250, y=200, height=20, width=100)
+
+# entry for port
+port_entry = Entry(root)
+port_entry.place(x=250, y=230, height=20, width=100)
+
+# entry for password
+password_entry = Entry(root, show="*")
+password_entry.place(x=250, y=260, height=20, width=100)
+
+# register submit button
+register_button = tk.Button(root,
+                            command=lambda: register_user(),
+                            text="Register",
+                            font="Raleway", bg="#2b2b2b",
+                            fg="white",
+                            borderwidth=0,
+                            highlightthickness=0,
+                            activebackground='#212121')
+register_button.place(x=250, y=290, height=20, width=100)
+
 # logo
 logo = Image.open('images/logo.png')
 logo = ImageTk.PhotoImage(logo)
 logo_label = tk.Label(image=logo, borderwidth=0, highlightthickness=0)
 logo_label.place(x=250, y=20)
-
-# progress bar
-pb_style = ttk.Style()
-pb_style.theme_use('clam')
-pb_style.configure("red.Horizontal.TProgressbar", foreground='#212121', background='#212121', throughcolor='#212121')
-progress_bar = ttk.Progressbar(root, orient='horizontal', mode='indeterminate', length=450,
-                               style='red.Horizontal.TProgressbar')
-progress_bar.place(x=25, y=576, height=10)
-progress_bar.place_forget()
 
 # send icon
 send_icon = Image.open('images/send_icon.png')
@@ -69,10 +145,37 @@ users_icon_label.place(x=510, y=150, height=25, width=30)
 users_header = tk.Label(root, text="Users", font=("Raleway", 12, "bold"), bg="#212121", fg="white")
 users_header.place(x=540, y=150)
 
+# refresh users button
+
+refresh_button = tk.Button(root,
+                           command=lambda: chat_refresher.refresh_users_list(),
+                           text="Update",
+                           font="Raleway", bg="#2b2b2b",
+                           fg="white",
+                           borderwidth=0,
+                           highlightthickness=0,
+                           activebackground='#212121')
+refresh_button.place(x=490, y=490, height=30, width=100)
+
+
+# submitting message from textbox and clearing it
+def submit_and_clear():
+    if not communication.REGISTERED:
+        return
+    if upload.UPLOADED:
+        submit.send_upload(communication.USER, submit.filePath, communication.ID,
+                           chat.User(chat_refresher.ACTIVE_USERNAME, chat_refresher.ACTIVE_ID,
+                                     chat_refresher.ACTIVE_PORT))
+    else:
+        submit.send_message(communication.USER, text_message_box.get("1.0", "end-1c"), communication.ID,
+                            chat.User(chat_refresher.ACTIVE_USERNAME, chat_refresher.ACTIVE_ID, chat_refresher.ACTIVE_PORT))
+    text_message_box.delete("1.0", "end")
+
+
 # send button
 send_button = tk.Button(root,
                         image=send_icon,
-                        command=lambda: submit.send_message(text_message_box.get("1.0", "end-1c")),
+                        command=lambda: submit_and_clear(),
                         font="Raleway", bg="#212121",
                         fg="white",
                         borderwidth=0,
@@ -102,6 +205,27 @@ upload_button = tk.Button(root,
                           activebackground='#212121')
 upload_button.place(x=515, y=532, height=30, width=30)
 
+# initializing the progress bar
+progress_bar.init()
+
+
+# on app exit event
+def exit_handler():
+    api_gate.unreg_user_in_api(communication.USER, communication.PORT)
+    os._exit(0)
+
+
+# injecting tkinter root to chat refresher
+chat_refresher.root_injector(root)
+
+# generating users' list for the first time
 chat.generate_user_list(root)
-chat.generate_chat(root)
+
+# running message listening thread
+listening_thread = Thread(target=communication.receive_message)
+listening_thread.start()
+
+# turning on app exit event handling
+root.protocol("WM_DELETE_WINDOW", exit_handler)
+
 root.mainloop()
