@@ -79,12 +79,17 @@ class UserTokenizedRequester(object):
             'iv': iv
         })
 
-    def get_all_users(self):
-        return requests.get('http://127.0.0.1:8080/api/users', headers={
-            'token': self._prepare_token_request_header(),
-        })
-
     def _parse_response(self, response: requests.Response, failed_value=None):
+        """ Parse response from server.
+
+        Parameters
+        ----------
+        response : Response
+            Response object to parse.
+
+        failed_value : any
+            Value returned when response status is different than success.
+        """
         if response.status_code == 405:
             raise ConnectionError('Method is not allowed. Check user token corectness.')
         if response.status_code != 200:
