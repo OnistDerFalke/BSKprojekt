@@ -2,13 +2,14 @@ from enum import Enum
 
 import communication
 
+
 class CipherMode(Enum):
     CBC = "CBC"
     ECB = "ECB"
 
 
 # current chosen mode
-mode = CipherMode.CBC
+mode = CipherMode.ECB
 mode_text = None
 
 

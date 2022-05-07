@@ -9,6 +9,7 @@ import api_gate
 import chat_refresher
 import communication
 import datamanager
+import key_manager
 
 ACTIVE_CHAT = None
 
@@ -68,7 +69,7 @@ def generate_user_list(root):
         button_text = tk.StringVar()
         button = tk.Button(root,
                            textvariable=button_text,
-                           command=partial(generate_chat, root, user.name, user.id),
+                           command=partial(generate_chat, root, user.name, user.id, user.port),
                            font="Raleway", bg="#2b2b2b",
                            fg="white",
                            borderwidth=0,
@@ -83,7 +84,8 @@ def generate_user_list(root):
 
 
 # generating chat (messages view)
-def generate_chat(root, username, id):
+def generate_chat(root, username, id, port):
+
     # unregistered user cannot have chats
     if not communication.REGISTERED:
         return
@@ -91,6 +93,9 @@ def generate_chat(root, username, id):
     # user has no active chat window with target
     if username is None:
         return
+
+    # session key exchange
+    key_manager.exchange_key_with_target(username, port)
 
     global ACTIVE_CHAT
     ACTIVE_CHAT = username
