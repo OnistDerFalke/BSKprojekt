@@ -1,8 +1,11 @@
 from Crypto.Cipher import AES, PKCS1_OAEP
+from Crypto.PublicKey import RSA
 from Crypto.Random import get_random_bytes
 from Crypto.Hash import SHA512
 from Crypto.Util.Padding import pad, unpad
 from threading import Thread
+from typing import Union
+import base64
 
 import cipher
 import communication
@@ -70,3 +73,102 @@ def exchange_key_with_target(target, port):
                                      args=("localhost", port))
         key_exchange_thread.start()
 
+
+def generate_rsa_keys(size: int = 2048):
+    """ Generate public and private RSA keys with provided size.
+
+    Parameters
+    ----------
+    size : int Optional. Default=2048.
+        Optional size in bytes of RSA key.
+
+    Returns
+    -------
+    (private, public) : Tuple[bytes, bytes]
+        Generated tuple of private and public keys.
+    """
+    key = RSA.generate(size)
+    pub_key = key.publickey()
+    return key.export_key(), pub_key.export_key()
+
+
+def encrypt_with_rsa_key(key: bytes, message: Union[bytes, str], to_str=False):
+    """ Encrypt provided message using provided RSA key.
+
+    Parameters
+    ----------
+    key : bytes
+        Key using in encryption.
+
+    message : Union[bytes, str]
+        Message to encrypt.
+
+    Returns
+    -------
+    message : bytes
+        Encrypted message.
+    """
+    if isinstance(message, str):
+        message = message.encode('utf-8')
+
+    rsa_key = RSA.import_key(key)
+
+    cipher = PKCS1_OAEP.new(rsa_key)
+    encrypted_msg = cipher.encrypt(message)
+    encrypted_msg = base64.b64encode(encrypted_msg)
+
+    if to_str:
+        encrypted_msg = encrypted_msg.decode('utf-8')
+
+    return encrypted_msg
+
+
+def decrypt_with_rsa_key(key: bytes, message: Union[bytes, str], to_str=False):
+    """ Decrypt provided message using provided RSA key.
+
+    Parameters
+    ----------
+    key : bytes
+        Key using in encryption.
+
+    message : Union[bytes, str]
+        Message to encrypt.
+
+    to_str : bool, Optional. Default = False.
+        Should returned message be converted to string.
+
+    Returns
+    -------
+    message : bytes
+        Decrypted message.
+    """
+    if isinstance(message, str):
+        message = message.encode('utf-8')
+
+    rsa_key = RSA.import_key(key)
+
+    cipher = PKCS1_OAEP.new(rsa_key)
+    encrypted_msg = base64.b64decode(message)
+    decrypted_msg = cipher.decrypt(encrypted_msg)
+
+    if to_str:
+        decrypted_msg = decrypted_msg.decode('utf-8')
+
+    return decrypted_msg
+
+
+if __name__ == '__main__':
+    message_bytes = b'BSK Bytes'
+    message_string = 'BSK String'
+
+    private, public = generate_rsa_keys()
+
+    encoded = encrypt_with_rsa_key(public, message_bytes)
+    print(encoded)
+    decoded = decrypt_with_rsa_key(private, encoded)
+    print(decoded)
+
+    encoded = encrypt_with_rsa_key(public, message_string, to_str=True)
+    print(encoded)
+    decoded = decrypt_with_rsa_key(private, encoded, to_str=True)
+    print(decoded)
