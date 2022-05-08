@@ -20,7 +20,7 @@ def root_injector(root):
 
 # refreshing chat -> update with new messages
 def refresh_chat():
-    chat.generate_chat(ROOT, ACTIVE_USERNAME, ACTIVE_ID, ACTIVE_PORT)
+    chat.generate_chat(ROOT, ACTIVE_USERNAME, ACTIVE_ID, ACTIVE_PORT, False)
     return
 
 

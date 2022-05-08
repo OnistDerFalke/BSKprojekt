@@ -69,7 +69,7 @@ def generate_user_list(root):
         button_text = tk.StringVar()
         button = tk.Button(root,
                            textvariable=button_text,
-                           command=partial(generate_chat, root, user.name, user.id, user.port),
+                           command=partial(generate_chat, root, user.name, user.id, user.port, True),
                            font="Raleway", bg="#2b2b2b",
                            fg="white",
                            borderwidth=0,
@@ -84,7 +84,7 @@ def generate_user_list(root):
 
 
 # generating chat (messages view)
-def generate_chat(root, username, id, port):
+def generate_chat(root, username, id, port, first_generate):
 
     # unregistered user cannot have chats
     if not communication.REGISTERED:
@@ -94,7 +94,9 @@ def generate_chat(root, username, id, port):
     if username is None:
         return
 
-    # session key exchange
+    # keys exchange
+    if first_generate:
+        key_manager.exchange_public_with_target(username, port, False)
     key_manager.exchange_key_with_target(username, port)
 
     global ACTIVE_CHAT

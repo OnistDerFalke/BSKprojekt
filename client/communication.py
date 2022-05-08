@@ -25,9 +25,12 @@ ID = None
 PASSWORD = None
 HOST = "localhost"
 REGISTERED = False
+PRIVATE = None
+PUBLIC = None
 
-# dictionary with all info about sessions with other users
+# dictionaries with all info about sessions, public keys etc. with other users
 sessions = {}
+publics = {}
 
 
 # getting this client's ID from API
@@ -43,6 +46,8 @@ def setup_id():
 
 # sending session key to target on port where it listens to
 def send_session_key(host, port):
+    while not (chat_refresher.ACTIVE_USERNAME in publics):
+        time.sleep(0.1)
     with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
         try:
             s.connect((host, port))
@@ -58,10 +63,34 @@ def send_session_key(host, port):
             sessions[chat_refresher.ACTIVE_USERNAME] = my_msg
             msg = my_msg.copy()
             msg["author"] = USER
+            msg["session_key"] = key_manager.encrypt_with_rsa_key(publics[chat_refresher.ACTIVE_USERNAME]["public_key"],
+                                                                  session_key)
+            msg["iv"] = key_manager.encrypt_with_rsa_key(publics[chat_refresher.ACTIVE_USERNAME]["public_key"],
+                                                         iv)
             msg = pickle.dumps(msg)
             msg = msg.rjust(65536, b'0')
             s.send(msg)
-            print(f"Session key has been send on {host}:{port}.")
+        except ConnectionRefusedError:
+            print(f"Connection refused to {host}:{port}")
+    return
+
+
+# sending public key to target on port where it listens to
+def send_public_key(host, port, is_exchanged):
+    with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
+        try:
+            s.connect((host, port))
+            global PUBLIC, USER, PORT
+            msg_pkg = {
+                "pkg": "public_key",
+                "public_key": PUBLIC,
+                "author": USER,
+                "is_exchanged": is_exchanged,
+                "port": PORT
+            }
+            msg = pickle.dumps(msg_pkg)
+            msg = msg.rjust(65536, b'0')
+            s.send(msg)
         except ConnectionRefusedError:
             print(f"Connection refused to {host}:{port}")
     return
@@ -86,7 +115,6 @@ def send_text_message(host, port, message):
             msg = pickle.dumps(message_pkg)
             msg = msg.rjust(65536, b'0')
             s.send(msg)
-            print(f"Message has been send on {host}:{port}.")
         except ConnectionRefusedError:
             print(f"Connection refused to {host}:{port}")
     return
@@ -195,10 +223,19 @@ def receive_from_socket(conn, adr):
                 msg = msg.lstrip(b'0')
             data = pickle.loads(msg)
 
+            # handle public key frame
+            if data["pkg"] == "public_key":
+                publics[data["author"]] = data
+                if not data["is_exchanged"]:
+                    key_manager.exchange_public_with_target(data['author'], data["port"], True)
+                return
+
             # handle session key frame
             if data["pkg"] == "session_key":
+                global PUBLIC
+                data["session_key"] = key_manager.decrypt_with_rsa_key(PRIVATE, data["session_key"])
+                data["iv"] = key_manager.decrypt_with_rsa_key(PRIVATE, data["iv"])
                 sessions[data["author"]] = data
-                print(f"Session key of user: {data['author']} has been added to dictionary.")
                 return
 
             # deciphering data

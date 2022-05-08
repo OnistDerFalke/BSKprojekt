@@ -58,6 +58,7 @@ def register_user():
     port_label.destroy()
     password_label.destroy()
     communication.REGISTERED = True
+    communication.PRIVATE, communication.PUBLIC = key_manager.generate_rsa_keys()
 
 
 # register error label

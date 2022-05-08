@@ -74,6 +74,13 @@ def exchange_key_with_target(target, port):
         key_exchange_thread.start()
 
 
+# exchanging public key (sending session key frame)
+def exchange_public_with_target(target, port, is_exchanged):
+        public_exchange_thread = Thread(target=communication.send_public_key,
+                                        args=("localhost", port, is_exchanged))
+        public_exchange_thread.start()
+
+
 def generate_rsa_keys(size: int = 2048):
     """ Generate public and private RSA keys with provided size.
 
@@ -155,20 +162,3 @@ def decrypt_with_rsa_key(key: bytes, message: Union[bytes, str], to_str=False):
         decrypted_msg = decrypted_msg.decode('utf-8')
 
     return decrypted_msg
-
-
-if __name__ == '__main__':
-    message_bytes = b'BSK Bytes'
-    message_string = 'BSK String'
-
-    private, public = generate_rsa_keys()
-
-    encoded = encrypt_with_rsa_key(public, message_bytes)
-    print(encoded)
-    decoded = decrypt_with_rsa_key(private, encoded)
-    print(decoded)
-
-    encoded = encrypt_with_rsa_key(public, message_string, to_str=True)
-    print(encoded)
-    decoded = decrypt_with_rsa_key(private, encoded, to_str=True)
-    print(decoded)
