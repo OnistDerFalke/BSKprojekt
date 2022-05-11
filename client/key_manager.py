@@ -1,3 +1,7 @@
+import json
+import os.path
+import secrets
+
 from Crypto.Cipher import AES, PKCS1_OAEP
 from Crypto.PublicKey import RSA
 from Crypto.Random import get_random_bytes
@@ -110,6 +114,9 @@ def encrypt_with_rsa_key(key: bytes, message: Union[bytes, str], to_str=False):
     message : Union[bytes, str]
         Message to encrypt.
 
+    to_str : bool, Optional. Default = False.
+        Should returned encrypted message be converted to string.
+
     Returns
     -------
     message : bytes
@@ -162,3 +169,118 @@ def decrypt_with_rsa_key(key: bytes, message: Union[bytes, str], to_str=False):
         decrypted_msg = decrypted_msg.decode('utf-8')
 
     return decrypted_msg
+
+
+def save_key_with_password(key: Union[bytes, str], password: Union[bytes, str], out_folder_path: str):
+    """ Save password and key in folder in provided path.
+
+    Parameters
+    ----------
+    key : Union[str, bytes]
+        Key to save.
+
+    password : Union[str, bytes]
+        Password for saved file.
+
+    out_folder_path : str
+        Path to the folder where files should be saved.
+    """
+    content = json.dumps({
+        'key': key if isinstance(key, str) else key.decode('utf-8'),
+        'password': password if isinstance(password, str) else password.decode('utf-8')
+    }).encode('utf-8')
+
+    if isinstance(password, str):
+        password = password.encode('utf-8')
+
+    aes = AES.new(password, AES.MODE_CBC)
+    encrypted_content = pad(content, AES.block_size)
+    encrypted_content = aes.encrypt(encrypted_content)
+
+    if not os.path.exists(out_folder_path):
+        os.mkdir(out_folder_path)
+
+    iv_path = os.path.join(out_folder_path, 'iv.bin')
+    with open(iv_path, 'wb') as file:
+        file.write(aes.iv)
+
+    content_path = os.path.join(out_folder_path, 'secrets.bin')
+    with open(content_path, 'wb') as file:
+        file.write(encrypted_content)
+
+
+def extract_key_with_password(password: Union[str, bytes], from_folder_path: str, to_str: bool = False):
+    """ Extract key from encrypted file using provided password.
+
+    Parameters
+    ----------
+    password : Union[str, bytes]
+        Password to the files.
+
+    from_folder_path : str
+        Path to folder with encrypted files.
+
+    to_str : bool, Optional. Default = False.
+        Should extracted key be converted to string.
+
+    Returns
+    -------
+    key : Union[None, bytes, str].
+        If password was incorrect None is returned.
+        Otherwise bytes or str depending on the value of parameter `to_str`.
+    """
+    key = password if isinstance(password, bytes) else password.encode('utf-8')
+
+    iv_path = os.path.join(from_folder_path, 'iv.bin')
+    with open(iv_path, 'rb') as file:
+        iv = file.read()
+
+    aes = AES.new(key, AES.MODE_CBC, iv)
+
+    # Extract encrypted file content. If key of cipher is
+    # different that used for encryption it will throw a
+    # ValueError of unpadding
+    content_path = os.path.join(from_folder_path, 'secrets.bin')
+    with open(content_path, 'rb') as file:
+        try:
+            decrypted_content = aes.decrypt(file.read())
+            decrypted_content = unpad(decrypted_content, AES.block_size)
+            decrypted_content = decrypted_content.decode('utf-8')
+        except ValueError as e:
+            return None
+
+    # If In some case unpadding will be correct could not
+    # be possible to create dictionary from extracted content
+    try:
+        json_content = json.loads(decrypted_content)
+    except json.decoder.JSONDecodeError as e:
+        return None
+
+    content_pass = json_content.get('password', '')
+
+    if isinstance(password, bytes):
+        password = password.decode('utf-8')
+
+    if content_pass != password:
+        return None
+
+    # If (in chance 1 to inf) dictionary could be created
+    # dictionary key of encrypted key should not exist
+    extracted_key = json_content.get('key', None)
+    if not to_str and extracted_key is not None:
+        return extracted_key.encode('utf-8')
+
+    return extracted_key
+
+
+if __name__ == '__main__':
+    key = b'---- PUBLIC RSA KEY ------ XDASDKASHDAXDAHSKDASHDKASDKASHDKASHDKAS -- END OF KEY --'
+    password = secrets.token_hex(16)
+    out_folder_path = '.\\ExampleUsername'
+
+    save_key_with_password(key, password, out_folder_path)
+    extracted_key = extract_key_with_password(password, out_folder_path, to_str=True)
+    print(extracted_key)
+
+    extracted_key = extract_key_with_password(secrets.token_hex(16), out_folder_path)
+    print(extracted_key)
