@@ -1,11 +1,11 @@
 import json
 import os.path
 import secrets
-
+import base64
 from Crypto.Cipher import AES, PKCS1_OAEP
 from Crypto.PublicKey import RSA
+from Crypto.Hash import SHA3_256
 from Crypto.Random import get_random_bytes
-from Crypto.Hash import SHA512
 from Crypto.Util.Padding import pad, unpad
 from threading import Thread
 from typing import Union
@@ -57,9 +57,9 @@ def cipher_session_key(session_key, receiver_key):
 
 # hash user-friendly password
 def hash_password(password):
-    hashed = SHA512.new()
-    hashed.update(bytes(password, 'utf-8'))
-    return hashed
+    hashed = SHA3_256.new()
+    hashed.update(password.encode(encoding='utf-8'))
+    return hashed.digest()
 
 
 # cipher the rsa key with local key
@@ -187,7 +187,7 @@ def save_key_with_password(key: Union[bytes, str], password: Union[bytes, str], 
     """
     content = json.dumps({
         'key': key if isinstance(key, str) else key.decode('utf-8'),
-        'password': password if isinstance(password, str) else password.decode('utf-8')
+        'password': password if isinstance(password, str) else base64.b64encode(password).decode('utf-8')
     }).encode('utf-8')
 
     if isinstance(password, str):
@@ -259,7 +259,7 @@ def extract_key_with_password(password: Union[str, bytes], from_folder_path: str
     content_pass = json_content.get('password', '')
 
     if isinstance(password, bytes):
-        password = password.decode('utf-8')
+        password = base64.b64encode(password).decode('utf-8')
 
     if content_pass != password:
         return None

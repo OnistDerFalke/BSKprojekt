@@ -27,6 +27,7 @@ HOST = "localhost"
 REGISTERED = False
 PRIVATE = None
 PUBLIC = None
+BINDED = False
 
 # dictionaries with all info about sessions, public keys etc. with other users
 sessions = {}
@@ -204,13 +205,15 @@ def receive_message():
 
     with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
         s.bind((HOST, PORT))
+        BINDED = True
         s.listen()
         print("Waiting for connection accept..")
-        while True:
+        while BINDED:
             print(f"Listening on {HOST}:{PORT}")
             conn, adr = s.accept()
             print("Connection accepted.")
             Thread(target=receive_from_socket, args=(conn, adr,)).start()
+        s.close()
 
 
 # takes data from socket and save with data manager

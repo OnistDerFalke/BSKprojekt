@@ -58,8 +58,27 @@ def register_user():
     port_label.destroy()
     password_label.destroy()
     communication.REGISTERED = True
-    communication.PRIVATE, communication.PUBLIC = key_manager.generate_rsa_keys()
-
+    if os.path.exists(f'./keys/{communication.USER}'):
+        extracted_key_public = key_manager.extract_key_with_password(
+            communication.PASSWORD, f'./keys/{communication.USER}/public')
+        extracted_key_private = key_manager.extract_key_with_password(
+            communication.PASSWORD, f'./keys/{communication.USER}/private')
+        if (extracted_key_public is None) or (extracted_key_private is None):
+            root.destroy()
+            print("Password was wrong, exiting application..")
+            os._exit(0)
+            return
+        communication.PUBLIC = extracted_key_public
+        communication.PRIVATE = extracted_key_private
+    else:
+        communication.PRIVATE, communication.PUBLIC = key_manager.generate_rsa_keys()
+        os.makedirs(f"./keys/{communication.USER}/public")
+        os.makedirs(f"./keys/{communication.USER}/private")
+        key_manager.save_key_with_password(communication.PUBLIC, communication.PASSWORD,
+                                           f'./keys/{communication.USER}/public')
+        key_manager.save_key_with_password(communication.PRIVATE, communication.PASSWORD,
+                                           f'./keys/{communication.USER}/private')
+        return
 
 # register error label
 regerror_content = tk.StringVar()
@@ -213,6 +232,9 @@ progress_bar.init()
 # on app exit event
 def exit_handler():
     api_gate.unreg_user_in_api(communication.USER, communication.PORT)
+    root.destroy()
+    communication.BINDED = False
+    print("Exiting the application..")
     os._exit(0)
 
 
