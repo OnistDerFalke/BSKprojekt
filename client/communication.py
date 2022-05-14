@@ -1,12 +1,14 @@
 import socket
 import pickle
 from threading import Thread
+from datetime import datetime
 import time
 import os
 
 import chat
 import chat_refresher
 import cipher
+import communication
 import datamanager
 import api_gate
 import key_manager
@@ -43,6 +45,41 @@ def setup_id():
             ID = user["id"]
             return
     print("Could not set user's ID")
+
+
+# sending acknowledgement to inform that message has been received
+def send_acknowledgement(host, port, target_id):
+    with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
+        try:
+            s.connect((host, port))
+            global PUBLIC, USER, PORT
+            message_data = {
+                "type": "text_message",
+                "message": "YOUR MESSAGE HAS BEEN RECEIVED",
+                "author": USER,
+                "send_time": datetime.now().strftime("%H:%M"),
+                "is_external": True,
+                "id": ID,
+                "target_id": target_id,
+                "is_sent": True,
+                "acknowledgement": True
+            }
+
+            message = key_manager.cipher_data(pickle.dumps(message_data),
+                                              sessions[chat_refresher.ACTIVE_USERNAME]["session_key"],
+                                              sessions[chat_refresher.ACTIVE_USERNAME]["iv"],
+                                              sessions[chat_refresher.ACTIVE_USERNAME]["aes_mode"])
+            msg_pkg = {
+                "pkg": "message",
+                "author": USER,
+                "msg": message
+            }
+            msg = pickle.dumps(msg_pkg)
+            msg = msg.rjust(65536, b'0')
+            s.send(msg)
+        except ConnectionRefusedError:
+            print(f"Connection refused to {host}:{port}")
+    return
 
 
 # sending session key to target on port where it listens to
@@ -235,7 +272,7 @@ def receive_from_socket(conn, adr):
 
             # handle session key frame
             if data["pkg"] == "session_key":
-                global PUBLIC
+                global PRIVATE
                 data["session_key"] = key_manager.decrypt_with_rsa_key(PRIVATE, data["session_key"])
                 data["iv"] = key_manager.decrypt_with_rsa_key(PRIVATE, data["iv"])
                 sessions[data["author"]] = data
@@ -245,6 +282,16 @@ def receive_from_socket(conn, adr):
             data = key_manager.decipher_data(data["msg"], sessions[data["author"]]["session_key"],
                                              sessions[data["author"]]["aes_mode"], sessions[data["author"]]["iv"])
             data = pickle.loads(data)
+
+            users = api_gate.get_users_list()
+            port = None
+            if not data["acknowledgement"]:
+                for user in users:
+                    if user["name"] == data["author"]:
+                        port = user["port"]
+                        break
+                if port is not None:
+                    send_acknowledgement("localhost", port, data["target_id"])
 
             # listening behavior for upload or text
             if data["type"] == "upload_message":

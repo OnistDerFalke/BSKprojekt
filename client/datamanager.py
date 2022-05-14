@@ -35,7 +35,8 @@ def add_text_message(name, realname, id, target_id, message, send_time, is_exter
         "is_external": is_external,
         "id": id,
         "target_id": target_id,
-        "is_sent": is_sent
+        "is_sent": is_sent,
+        "acknowledgement": False
     }
     with open(filedir+filename, 'r+') as file:
         file_data = json.load(file)
@@ -58,7 +59,8 @@ def add_upload_message(name, realname, id, target_id, upload_path, send_time, fi
         "id": id,
         "target_id": target_id,
         "is_sent": is_sent,
-        "file_size": file_size
+        "file_size": file_size,
+        "acknowledgement": False
     }
     with open(filedir+filename, 'r+') as file:
         file_data = json.load(file)
@@ -66,3 +68,7 @@ def add_upload_message(name, realname, id, target_id, upload_path, send_time, fi
         file.seek(0)
         json.dump(file_data, file, indent=4)
     return message_data
+
+
+
+
