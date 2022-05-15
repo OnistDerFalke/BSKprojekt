@@ -48,7 +48,7 @@ def setup_id():
 
 
 # sending acknowledgement to inform that message has been received
-def send_acknowledgement(host, port, target_id):
+def send_acknowledgement(host, port, target_id, user):
     with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
         try:
             s.connect((host, port))
@@ -66,9 +66,9 @@ def send_acknowledgement(host, port, target_id):
             }
 
             message = key_manager.cipher_data(pickle.dumps(message_data),
-                                              sessions[chat_refresher.ACTIVE_USERNAME]["session_key"],
-                                              sessions[chat_refresher.ACTIVE_USERNAME]["iv"],
-                                              sessions[chat_refresher.ACTIVE_USERNAME]["aes_mode"])
+                                              sessions[user]["session_key"],
+                                              sessions[user]["iv"],
+                                              sessions[user]["aes_mode"])
             msg_pkg = {
                 "pkg": "message",
                 "author": USER,
@@ -291,7 +291,7 @@ def receive_from_socket(conn, adr):
                         port = user["port"]
                         break
                 if port is not None:
-                    send_acknowledgement("localhost", port, data["target_id"])
+                    send_acknowledgement("localhost", port, data["target_id"], user["name"])
 
             # listening behavior for upload or text
             if data["type"] == "upload_message":
