@@ -26,26 +26,29 @@ root['bg'] = '#212121'
 def register_user():
     users = api_gate.get_users_list()
 
+    # check if port and password is ok
+    if 65535 < int(port_entry.get()) or int(port_entry.get()) < 1:
+        regerror_content.set("This port cannot be used.")
+        return
+    if len(password_entry.get()) < 8:
+        regerror_content.set(f"Password is too short (min. 8 characters).")
+        return
+
     # check if port or username is not taken
     if users is not None:
         for user in users:
-            if 65535 < int(port_entry.get()) or int(port_entry.get()) < 1:
-                regerror_content.set("This port cannot be used.")
-                return
             if user["name"] == username_entry.get():
                 regerror_content.set("Username is already taken.")
                 return
             if user["port"] == int(port_entry.get()):
                 regerror_content.set("Port is already taken.")
                 return
-            if len(password_entry.get()) < 8:
-                regerror_content.set("Password is too short (min. 8 characters)")
-                return
     else:
         print("Cannot register, no API connection.")
         return
 
     # closing register widget
+    print(len(password_entry.get()))
     communication.USER = username_entry.get()
     communication.PORT = int(port_entry.get())
     communication.PASSWORD = key_manager.hash_password(password_entry.get())

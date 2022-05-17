@@ -299,6 +299,10 @@ def receive_from_socket(conn, adr):
                 filename = os.path.basename(data["message"])
                 filesize = int(data["file_size_encrypted"])
                 filesize_org = int(data["file_size"])
+
+                if not os.path.exists('downloads'):
+                    os.makedirs('downloads')
+
                 # changing path to new path of file
                 data["message"] = os.path.abspath(os.path.dirname(__file__)) + \
                                   '/downloads/' + os.path.basename(data["message"])
