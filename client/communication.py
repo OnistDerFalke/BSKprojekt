@@ -35,6 +35,8 @@ BINDED = False
 sessions = {}
 publics = {}
 
+listening = False
+
 
 # getting this client's ID from API
 def setup_id():
@@ -255,6 +257,8 @@ def receive_message():
 
 # takes data from socket and save with data manager
 def receive_from_socket(conn, adr):
+    global listening
+    fake_session = key_manager.generate_session_key();
     while True:
         try:
             # getting the frame of any type
@@ -279,7 +283,17 @@ def receive_from_socket(conn, adr):
                 return
 
             # deciphering data
-            data = key_manager.decipher_data(data["msg"], sessions[data["author"]]["session_key"],
+            if listening:
+                tempdata = data.copy()
+                data = key_manager.decipher_data(data["msg"], sessions[data["author"]]["session_key"],
+                                             sessions[data["author"]]["aes_mode"], sessions[data["author"]]["iv"])
+                bad_data = key_manager.decipher_data(tempdata["msg"], fake_session,
+                                                 sessions[tempdata["author"]]["aes_mode"], sessions[tempdata["author"]]["iv"])
+                datamanager.add_text_message(tempdata["author"], tempdata["author"], 0,
+                                             0, bad_data, datetime.now().strftime("%H:%M"), True)
+                chat_refresher.refresh_chat()
+            else:
+                data = key_manager.decipher_data(data["msg"], sessions[data["author"]]["session_key"],
                                              sessions[data["author"]]["aes_mode"], sessions[data["author"]]["iv"])
             data = pickle.loads(data)
 
@@ -306,7 +320,9 @@ def receive_from_socket(conn, adr):
                 # changing path to new path of file
                 data["message"] = os.path.abspath(os.path.dirname(__file__)) + \
                                   '/downloads/' + os.path.basename(data["message"])
-                datamanager.add_upload_message(data["author"], data["author"], data["target_id"],
+
+                if not listening:
+                    datamanager.add_upload_message(data["author"], data["author"], data["target_id"],
                                                data["id"], data["message"], data["send_time"], data["file_size"], True)
 
                 # setting progress bar for receiving
@@ -333,15 +349,17 @@ def receive_from_socket(conn, adr):
                     content = key_manager.decipher_data(content, sessions[data["author"]]["session_key"],
                                                         sessions[data["author"]]["aes_mode"],
                                                         sessions[data["author"]]["iv"])
-                    t.write(pickle.loads(content))
+                    if not listening:
+                        t.write(pickle.loads(content))
                     progress_bar.dispose()
                     chat_refresher.refresh_chat()
                 upload.UPLOADED = False
                 print("File succesfully uploaded.")
             elif data["type"] == "text_message":
-                datamanager.add_text_message(data["author"], data["author"], data["target_id"],
-                                             data["id"], data["message"], data["send_time"], True)
-                chat_refresher.refresh_chat()
+                if not listening:
+                    datamanager.add_text_message(data["author"], data["author"], data["target_id"],
+                                                 data["id"], data["message"], data["send_time"], True)
+                    chat_refresher.refresh_chat()
         except ConnectionError:
             print(f"Connection lost with {adr}")
         except EOFError:

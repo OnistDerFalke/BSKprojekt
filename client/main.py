@@ -145,11 +145,21 @@ cipher_icon = ImageTk.PhotoImage(cipher_icon)
 users_icon = Image.open('images/users_icon.png')
 users_icon = ImageTk.PhotoImage(users_icon)
 
+# listener icon
+listener_icon = Image.open('images/ear.png')
+listener_icon = ImageTk.PhotoImage(listener_icon)
+
 # cipher-mode info
 cipher.mode_text = tk.StringVar()
 cipher.mode_text.set("Mode: " + cipher.mode.value)
 cipher_mode_info = tk.Label(root, textvariable=cipher.mode_text, font=("Raleway", 10), bg="#212121", fg="white")
 cipher_mode_info.place(x=480, y=570)
+
+# listener info
+listener_text = tk.StringVar()
+listener_text.set("Listening: " + str(communication.listening))
+listener_info = tk.Label(root, textvariable=listener_text, font=("Raleway", 10), bg="#212121", fg="white")
+listener_info.place(x=40, y=10)
 
 # upload-file info
 submit.filePath = tk.StringVar()
@@ -195,6 +205,11 @@ def submit_and_clear():
     text_message_box.delete("1.0", "end")
 
 
+def handle_listener():
+    communication.listening = not communication.listening
+    listener_text.set("Listening: " + str(communication.listening))
+
+
 # send button
 send_button = tk.Button(root,
                         image=send_icon,
@@ -227,6 +242,17 @@ upload_button = tk.Button(root,
                           highlightthickness=0,
                           activebackground='#212121')
 upload_button.place(x=515, y=532, height=30, width=30)
+
+# listener button
+listener_button = tk.Button(root,
+                          image=listener_icon,
+                          command=lambda: handle_listener(),
+                          font="Raleway", bg="#212121",
+                          fg="white",
+                          borderwidth=0,
+                          highlightthickness=0,
+                          activebackground='#212121')
+listener_button.place(x=5, y=5, height=30, width=30)
 
 # initializing the progress bar
 progress_bar.init()
